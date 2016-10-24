@@ -1,4 +1,4 @@
-package com.crossover.trial.weather;
+package com.crossover.trial.weather.service;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -8,6 +8,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.crossover.trial.weather.domain.AirportData;
+import com.crossover.trial.weather.domain.DataPointType;
 
 /**
  * The interface shared to airport weather collection systems.

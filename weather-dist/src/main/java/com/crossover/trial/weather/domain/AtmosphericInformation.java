@@ -1,4 +1,4 @@
-package com.crossover.trial.weather;
+package com.crossover.trial.weather.domain;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -175,7 +175,7 @@ public class AtmosphericInformation {
     /**
      * @return current lastUpdateTime.
      */
-    protected long getLastUpdateTime() {
+    public long getLastUpdateTime() {
         return this.lastUpdateTime;
     }
 
@@ -183,7 +183,7 @@ public class AtmosphericInformation {
      * @param lastUpdateTime
      *            lastUpdateTime to set.
      */
-    protected void setLastUpdateTime(long lastUpdateTime) {
+    public void setLastUpdateTime(long lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
 

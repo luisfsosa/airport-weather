@@ -11,6 +11,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.crossover.trial.weather.domain.AirportData;
+import com.crossover.trial.weather.domain.AtmosphericInformation;
+import com.crossover.trial.weather.domain.DataPoint;
+import com.crossover.trial.weather.service.WeatherCollectorEndpoint;
+import com.crossover.trial.weather.service.WeatherQueryEndpoint;
+import com.crossover.trial.weather.service.impl.RestWeatherCollectorEndpoint;
+import com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;

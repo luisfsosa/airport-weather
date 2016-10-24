@@ -1,6 +1,6 @@
-package com.crossover.trial.weather;
+package com.crossover.trial.weather.service.impl;
 
-import static com.crossover.trial.weather.RestWeatherCollectorEndpoint.addAirport;
+import static com.crossover.trial.weather.service.impl.RestWeatherCollectorEndpoint.addAirport;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +12,9 @@ import java.util.logging.Logger;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
+import com.crossover.trial.weather.domain.AirportData;
+import com.crossover.trial.weather.domain.AtmosphericInformation;
+import com.crossover.trial.weather.service.WeatherQueryEndpoint;
 import com.google.gson.Gson;
 
 /**
@@ -216,7 +219,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     /**
      * A dummy init method that loads hard coded data
      */
-    protected static void init() {
+    public static void init() {
         airportDataList.clear();
         atmosphericInformationList.clear();
         requestFrequencyMap.clear();

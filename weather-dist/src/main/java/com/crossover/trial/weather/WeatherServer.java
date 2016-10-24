@@ -15,6 +15,9 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
+import com.crossover.trial.weather.service.impl.RestWeatherCollectorEndpoint;
+import com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint;
+
 /**
  * This main method will be use by the automated functional grader. You
  * shouldn't move this class or remove the main method. You may change the

@@ -1,4 +1,4 @@
-package com.crossover.trial.weather;
+package com.crossover.trial.weather.domain;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -39,6 +39,13 @@ public class DataPoint {
     private int count;
 
     /**
+     * private constructor, use the builder to create this object.
+     */
+    @SuppressWarnings("unused")
+    private DataPoint() {
+    }
+
+    /**
      * A valid Constructor for the class.
      *
      * @param builder
@@ -50,10 +57,6 @@ public class DataPoint {
         this.mean = builder.mean;
         this.third = builder.third;
         this.count = builder.count;
-    }
-
-    /** private constructor, use the builder to create this object. */
-    protected DataPoint() {
     }
 
     /**
@@ -69,7 +72,7 @@ public class DataPoint {
      * @param mean
      *            mean to set.
      */
-    protected void setMean(final double mean) {
+    public void setMean(final double mean) {
         this.mean = mean;
     }
 

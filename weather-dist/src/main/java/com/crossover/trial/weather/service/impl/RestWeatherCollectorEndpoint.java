@@ -1,9 +1,9 @@
-package com.crossover.trial.weather;
+package com.crossover.trial.weather.service.impl;
 
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.airportDataList;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.atmosphericInformationList;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.findAirportData;
-import static com.crossover.trial.weather.RestWeatherQueryEndpoint.getAirportDataIdx;
+import static com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint.airportDataList;
+import static com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint.atmosphericInformationList;
+import static com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint.findAirportData;
+import static com.crossover.trial.weather.service.impl.RestWeatherQueryEndpoint.getAirportDataIdx;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -13,6 +13,12 @@ import java.util.logging.Logger;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
+import com.crossover.trial.weather.domain.AirportData;
+import com.crossover.trial.weather.domain.AtmosphericInformation;
+import com.crossover.trial.weather.domain.DataPoint;
+import com.crossover.trial.weather.domain.DataPointType;
+import com.crossover.trial.weather.exception.WeatherException;
+import com.crossover.trial.weather.service.WeatherCollectorEndpoint;
 import com.google.gson.Gson;
 
 /**
@@ -240,14 +246,12 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
      */
     public static AirportData addAirport(final String iataCode,
             final double latitude, final double longitude) {
-        AirportData airportData = new AirportData();
+        AirportData airportData = new AirportData.Builder().withIata(iataCode)
+                .withLatitude(latitude).withLongitude(longitude).build();
         airportDataList.add(airportData);
 
         AtmosphericInformation atmosphericInfo = new AtmosphericInformation();
         atmosphericInformationList.add(atmosphericInfo);
-        airportData.setIata(iataCode);
-        airportData.setLatitude(latitude);
-        airportData.setLatitude(longitude);
         return airportData;
     }
 }
