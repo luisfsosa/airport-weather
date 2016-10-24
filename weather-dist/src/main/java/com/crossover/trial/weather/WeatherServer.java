@@ -25,6 +25,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 public class WeatherServer {
 
     /**
+     * Log of the Class.
+     */
+    public static final Logger LOGGER = Logger
+            .getLogger(WeatherClient.class.getName());
+
+    /**
      * Base URL for The Server.
      */
     private static final String BASE_URL = "http://localhost:9090/";
@@ -35,9 +41,8 @@ public class WeatherServer {
      * @param args
      */
     public static void main(String[] args) {
-        try {
-            System.out.println(
-                    "Starting Weather App local testing server: " + BASE_URL);
+        try {            
+            LOGGER.log(Level.INFO,"Starting Weather App local testing server: " + BASE_URL);
 
             final ResourceConfig resourceConfig = new ResourceConfig();
             resourceConfig.register(RestWeatherCollectorEndpoint.class);
@@ -52,7 +57,7 @@ public class WeatherServer {
             HttpServerProbe probe = new HttpServerProbe.Adapter() {
                 public void onRequestReceiveEvent(final HttpServerFilter filter,
                         final Connection connection, final Request request) {
-                    System.out.println(request.getRequestURI());
+                    LOGGER.log(Level.INFO,request.getRequestURI());
                 }
             };
             server.getServerConfiguration().getMonitoringConfig()
@@ -61,15 +66,17 @@ public class WeatherServer {
             // the autograder waits for this output before running automated
             // tests, please don't remove it
             server.start();
-            System.out.println(
-                    format("Weather Server started.\n url=%s\n", BASE_URL));
+            
+            LOGGER.log(Level.INFO,format("Weather Server started.\n url=%s\n", BASE_URL));
+            
+//            System.out.println(
+//                    format("Weather Server started.\n url=%s\n", BASE_URL));
 
             // blocks until the process is terminated
             Thread.currentThread().join();
             server.shutdown();
         } catch (IOException | InterruptedException ex) {
-            Logger.getLogger(WeatherServer.class.getName()).log(Level.SEVERE,
-                    null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
     }
 }

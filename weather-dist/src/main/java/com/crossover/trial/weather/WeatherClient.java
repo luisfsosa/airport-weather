@@ -1,5 +1,12 @@
 package com.crossover.trial.weather;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -16,6 +23,12 @@ import javax.ws.rs.core.Response;
 public class WeatherClient {
 
     /**
+     * Log of the Class.
+     */
+    public static final Logger LOGGER = Logger
+            .getLogger(WeatherClient.class.getName());
+
+    /**
      * Base URL for The Server.
      */
     private static final String BASE_URI = "http://localhost:9090";
@@ -23,30 +36,31 @@ public class WeatherClient {
     /**
      * end point for read queries.
      */
-    private WebTarget query;
+    private WebTarget weatherQueryEndpoint;
 
     /**
      * end point to supply updates.
      */
-    private WebTarget collect;
+    private WebTarget weatherCollectorEndpoint;
 
     /**
      * Default Constructor.
      */
     public WeatherClient() {
         Client client = ClientBuilder.newClient();
-        query = client.target(BASE_URI + "/query");
-        collect = client.target(BASE_URI + "/collect");
+        weatherQueryEndpoint = client.target(BASE_URI + "/query");
+        weatherCollectorEndpoint = client.target(BASE_URI + "/collect");
     }
 
     /**
      * A liveliness check for the collection endpoint.
      */
     public void pingCollect() {
-        WebTarget path = collect.path("/ping");
+        WebTarget path = weatherCollectorEndpoint.path("/ping");
         Response response = path.request().get();
-        System.out.print(
+        LOGGER.log(Level.INFO,
                 "collect.ping: " + response.readEntity(String.class) + "\n");
+
     }
 
     /**
@@ -57,9 +71,9 @@ public class WeatherClient {
      *            the three letter airport code
      */
     public void query(String iata) {
-        WebTarget path = query.path("/weather/" + iata + "/0");
+        WebTarget path = weatherQueryEndpoint.path("/weather/" + iata + "/0");
         Response response = path.request().get();
-        System.out.println(
+        LOGGER.log(Level.INFO,
                 "query." + iata + ".0: " + response.readEntity(String.class));
     }
 
@@ -71,9 +85,10 @@ public class WeatherClient {
      *
      */
     public void pingQuery() {
-        WebTarget path = query.path("/ping");
+        WebTarget path = weatherQueryEndpoint.path("/ping");
         Response response = path.request().get();
-        System.out.println("query.ping: " + response.readEntity(String.class));
+        LOGGER.log(Level.INFO,
+                "query.ping: " + response.readEntity(String.class));
     }
 
     /**
@@ -94,11 +109,12 @@ public class WeatherClient {
      */
     public void populate(String pointType, int first, int last, int mean,
             int median, int count) {
-        WebTarget path = collect.path("/weather/BOS/" + pointType);
-        DataPoint dp = new DataPoint.Builder().withFirst(first).withThird(last)
-                .withMean(mean).withSecond(median).withCount(count).build();
-        Response post = path.request()
-                .post(Entity.entity(dp, "application/json"));
+        WebTarget path = weatherCollectorEndpoint
+                .path("/weather/BOS/" + pointType);
+        DataPoint dataPoint = new DataPoint.Builder().withFirst(first)
+                .withThird(last).withMean(mean).withSecond(median)
+                .withCount(count).build();
+        path.request().post(Entity.entity(dataPoint, "application/json"));
     }
 
     /**
@@ -106,10 +122,38 @@ public class WeatherClient {
      */
     public void exit() {
         try {
-            collect.path("/exit").request().get();
+            weatherCollectorEndpoint.path("/exit").request().get();
         } catch (Throwable t) {
-            // swallow
+            // LOGGER.log(Level.SEVERE, null, t);
         }
+    }
+
+    /**
+     * Retrieve all Airport from a file.
+     *
+     */
+    public void loadAllAirports() {
+
+        ClassLoader classLoader = AirportLoader.class.getClassLoader();
+        File airportDataFile = new File(
+                classLoader.getResource("airports.dat").getFile());
+
+        if (airportDataFile == null || !airportDataFile.exists()
+                || airportDataFile.length() == 0) {
+            LOGGER.log(Level.SEVERE, airportDataFile + " is not a valid input");
+            System.exit(1);
+        }
+
+        AirportLoader airportLoader = new AirportLoader();
+
+        try {
+            airportLoader.upload(new FileInputStream(airportDataFile));
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.SEVERE, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, null, e);
+        }
+
     }
 
     /**
@@ -119,6 +163,9 @@ public class WeatherClient {
      */
     public static void main(String[] args) {
         WeatherClient wc = new WeatherClient();
+
+        wc.loadAllAirports();
+
         wc.pingCollect();
         wc.populate("wind", 0, 10, 6, 4, 20);
 
@@ -130,7 +177,7 @@ public class WeatherClient {
 
         wc.pingQuery();
         wc.exit();
-        System.out.print("complete");
+        LOGGER.log(Level.INFO, "complete");
         System.exit(0);
     }
 }
