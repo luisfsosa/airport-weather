@@ -1,10 +1,7 @@
 package com.crossover.trial.weather.service.impl;
 
-import static com.crossover.trial.weather.service.impl.RestWeatherCollectorEndpoint.addAirport;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -14,6 +11,7 @@ import javax.ws.rs.core.Response;
 
 import com.crossover.trial.weather.domain.AirportData;
 import com.crossover.trial.weather.domain.AtmosphericInformation;
+import com.crossover.trial.weather.repository.AirportDataRepository;
 import com.crossover.trial.weather.service.WeatherQueryEndpoint;
 import com.google.gson.Gson;
 
@@ -40,13 +38,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     public static final Gson GSON = new Gson();
 
     /** all known airports */
-    protected static List<AirportData> airportDataList = new ArrayList<>();
-
-    /**
-     * atmospheric information for each airport, idx corresponds with
-     * airportData
-     */
-    protected static List<AtmosphericInformation> atmosphericInformationList = new LinkedList<>();
+    protected static AirportDataRepository airportDataRepository = new AirportDataRepository();
 
     /**
      * Internal performance counter to better understand most requested
@@ -69,9 +61,12 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     @Override
     public String ping() {
         Map<String, Object> retrieveValue = new HashMap<>();
+        AtmosphericInformation atmosphericInformation = null;
 
         int datasize = 0;
-        for (AtmosphericInformation atmosphericInformation : atmosphericInformationList) {
+        for (AirportData airportData : airportDataRepository.findAll()) {
+
+            atmosphericInformation = airportData.getAtmosphericInformation();
             // we only count recent readings
             if (atmosphericInformation.getCloudCover() != null
                     || atmosphericInformation.getHumidity() != null
@@ -91,7 +86,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
 
         Map<String, Double> freq = new HashMap<>();
         // fraction of queries
-        for (AirportData data : airportDataList) {
+        for (AirportData data : airportDataRepository.findAll()) {
             double frac = (double) requestFrequencyMap.getOrDefault(data, 0)
                     / requestFrequencyMap.size();
             freq.put(data.getIata(), frac);
@@ -128,20 +123,20 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
 
         double radius = radiusString == null || radiusString.trim().isEmpty()
                 ? 0 : Double.valueOf(radiusString);
-        
-        
+
         updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retrieveValue = new ArrayList<>();
         if (radius == 0) {
-            int idx = getAirportDataIdx(iata);
-            retrieveValue.add(atmosphericInformationList.get(idx));
+            retrieveValue.add(airportDataRepository.findOne(iata)
+                    .getAtmosphericInformation());
         } else {
-            AirportData airportData = findAirportData(iata);
-            for (int i = 0; i < airportDataList.size(); i++) {
-                if (calculateDistance(airportData, airportDataList.get(i)) <= radius) {
-                    AtmosphericInformation atmosphericInformation = atmosphericInformationList
-                            .get(i);
+            AirportData airportData = airportDataRepository.findOne(iata);
+            for (int i = 0; i < airportDataRepository.findAll().size(); i++) {
+                if (calculateDistance(airportData,
+                        airportDataRepository.findAll().get(i)) <= radius) {
+                    AtmosphericInformation atmosphericInformation = airportDataRepository
+                            .findAll().get(i).getAtmosphericInformation();
                     if (atmosphericInformation.getCloudCover() != null
                             || atmosphericInformation.getHumidity() != null
                             || atmosphericInformation.getPrecipitation() != null
@@ -166,7 +161,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      *            query radius
      */
     public void updateRequestFrequency(String iata, Double radius) {
-        AirportData airportData = findAirportData(iata);
+        AirportData airportData = airportDataRepository.findOne(iata);
         requestFrequencyMap.put(airportData,
                 requestFrequencyMap.getOrDefault(airportData, 0) + 1);
         radiusFreqMap.put(radius, radiusFreqMap.getOrDefault(radius, 0));
@@ -179,11 +174,11 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      *            as a string
      * @return airport data or null if not found
      */
-    public static AirportData findAirportData(String iataCode) {
-        return airportDataList.stream()
-                .filter(ap -> ap.getIata().equals(iataCode)).findFirst()
-                .orElse(null);
-    }
+    // public static AirportData findAirportData(String iataCode) {
+    // return airportDataList.stream()
+    // .filter(ap -> ap.getIata().equals(iataCode)).findFirst()
+    // .orElse(null);
+    // }
 
     /**
      * Given an iataCode find the airport data
@@ -192,10 +187,10 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      *            as a string
      * @return airport data or null if not found
      */
-    public static int getAirportDataIdx(String iataCode) {
-        AirportData ad = findAirportData(iataCode);
-        return airportDataList.indexOf(ad);
-    }
+    // public static int getAirportDataIdx(String iataCode) {
+    // AirportData ad = findAirportData(iataCode);
+    // return airportDataList.indexOf(ad);
+    // }
 
     /**
      * Haversine distance between two airports.
@@ -224,15 +219,14 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      * A dummy init method that loads hard coded data
      */
     public static void init() {
-        airportDataList.clear();
-        atmosphericInformationList.clear();
+        airportDataRepository.findAll().clear();
         requestFrequencyMap.clear();
 
-        addAirport("BOS", 42.364347, -71.005181);
-        addAirport("EWR", 40.6925, -74.168667);
-        addAirport("JFK", 40.639751, -73.778925);
-        addAirport("LGA", 40.777245, -73.872608);
-        addAirport("MMU", 40.79935, -74.4148747);
+        airportDataRepository.addAirport("BOS", 42.364347, -71.005181);
+        airportDataRepository.addAirport("EWR", 40.6925, -74.168667);
+        airportDataRepository.addAirport("JFK", 40.639751, -73.778925);
+        airportDataRepository.addAirport("LGA", 40.777245, -73.872608);
+        airportDataRepository.addAirport("MMU", 40.79935, -74.4148747);
     }
 
 }

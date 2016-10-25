@@ -20,7 +20,7 @@ public enum DataPointType {
     /**
      * Humidity Type.
      */
-    HUMIDTY,
+    HUMIDITY,
 
     /**
      * Pressure Type.

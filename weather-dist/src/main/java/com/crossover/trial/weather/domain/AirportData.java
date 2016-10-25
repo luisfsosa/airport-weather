@@ -63,6 +63,11 @@ public class AirportData {
     private DST zone = DST.U;
 
     /**
+     * 
+     */
+    private AtmosphericInformation atmosphericInformation;
+
+    /**
      * private constructor, use the builder to create this object.
      */
     @SuppressWarnings("unused")
@@ -86,6 +91,7 @@ public class AirportData {
         this.altitude = builder.altitude;
         this.timeZone = builder.timeZone;
         this.zone = builder.zone;
+        this.atmosphericInformation = builder.atmosphericInformation;
     }
 
     /**
@@ -238,6 +244,21 @@ public class AirportData {
         this.zone = zone;
     }
 
+    /**
+     * @return
+     */
+    public AtmosphericInformation getAtmosphericInformation() {
+        return atmosphericInformation;
+    }
+
+    /**
+     * @param atmosphericInformation
+     */
+    public void setAtmosphericInformation(
+            AtmosphericInformation atmosphericInformation) {
+        this.atmosphericInformation = atmosphericInformation;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -338,6 +359,11 @@ public class AirportData {
         private DST zone;
 
         /**
+         * 
+         */
+        private AtmosphericInformation atmosphericInformation;
+
+        /**
          * @param name
          *            name to set.
          * @return The Builder of AirportData Class.
@@ -434,6 +460,17 @@ public class AirportData {
          */
         public Builder withZone(DST zone) {
             this.zone = zone;
+            return this;
+        }
+
+        /**
+         * @param atmosphericInformation
+         *            atmosphericInformation to set.
+         * @return The Builder of AirportData Class.
+         */
+        public Builder withAtmosphericInformation(
+                AtmosphericInformation atmosphericInformation) {
+            this.atmosphericInformation = atmosphericInformation;
             return this;
         }
 
