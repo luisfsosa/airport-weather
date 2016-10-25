@@ -1,5 +1,7 @@
 package com.crossover.trial.weather.controller;
 
+import static com.crossover.trial.weather.controller.AirportController.airportDataRepository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,15 +10,13 @@ import java.util.logging.Logger;
 
 import com.crossover.trial.weather.domain.AirportData;
 import com.crossover.trial.weather.domain.AtmosphericInformation;
-import com.crossover.trial.weather.repository.AirportDataRepository;
+import com.crossover.trial.weather.repository.WeatherRepository;
 import com.google.gson.Gson;
 
 /**
- * The Weather App REST endpoint allows clients to query, update and check
- * health stats. Currently, all data is held in memory. The end point deploys to
- * a single container
+ * A Controller of the WeatherQuery API.
  *
- * @author code test administrator
+ * @author luisfsosa@gmail.com
  */
 public class WeatherQueryController {
 
@@ -32,20 +32,11 @@ public class WeatherQueryController {
     /** shared gson json to object factory */
     public static final Gson GSON = new Gson();
 
-    /** all known airports */
-    protected static AirportDataRepository airportDataRepository = new AirportDataRepository();
+    // TODO: Inject AirportDataRepository.
 
-    /**
-     * Internal performance counter to better understand most requested
-     * information, this map can be improved but for now provides the basis for
-     * future performance optimizations. Due to the stateless deployment
-     * architecture we don't want to write this to disk, but will pull it off
-     * using a REST request and aggregate with other performance metrics
-     * {@link #ping()}
-     */
-    public static Map<AirportData, Integer> requestFrequencyMap = new HashMap<AirportData, Integer>();
-
-    public static Map<Double, Integer> radiusFreqMap = new HashMap<Double, Integer>();
+    /** all known Weathers */
+    // TODO: Inject WeatherRepository.
+    protected static WeatherRepository weatherRepository = new WeatherRepository();
 
     /**
      * Retrieve service health including total size of valid data points and
@@ -55,9 +46,20 @@ public class WeatherQueryController {
      */
     public String ping() {
         Map<String, Object> retrieveValue = new HashMap<>();
-        AtmosphericInformation atmosphericInformation = null;
+        retrieveValue.put("datasize", getSize());
+        retrieveValue.put("iata_freq", getFreqs());
+        retrieveValue.put("radius_freq", getHits());
+        return GSON.toJson(retrieveValue);
+    }
 
+    /**
+     * Retrieve total size of valid data points.
+     *
+     * @return total size of valid data points.
+     */
+    public int getSize() {
         int datasize = 0;
+        AtmosphericInformation atmosphericInformation = null;
         for (AirportData airportData : airportDataRepository.findAll()) {
 
             atmosphericInformation = airportData.getAtmosphericInformation();
@@ -76,28 +78,45 @@ public class WeatherQueryController {
                 }
             }
         }
-        retrieveValue.put("datasize", datasize);
 
-        Map<String, Double> freq = new HashMap<>();
+        return datasize;
+    }
+
+    /**
+     * Retrieve request frequency information.
+     *
+     * @return request frequency information.
+     */
+    public Map<String, Double> getFreqs() {
+        Map<String, Double> freqMap = new HashMap<>();
         // fraction of queries
         for (AirportData data : airportDataRepository.findAll()) {
-            double frac = (double) requestFrequencyMap.getOrDefault(data, 0)
-                    / requestFrequencyMap.size();
-            freq.put(data.getIata(), frac);
+            double frac = (double) weatherRepository.findAllRequestFrequency()
+                    .getOrDefault(data, 0)
+                    / weatherRepository.findAllRequestFrequency().size();
+            freqMap.put(data.getIata(), frac);
         }
-        retrieveValue.put("iata_freq", freq);
+        return freqMap;
+    }
 
-        int m = radiusFreqMap.keySet().stream().max(Double::compare)
-                .orElse(1000.0).intValue() + 1;
+    /**
+     * Retrieve hits information.
+     *
+     * @returnhits information.
+     */
+    public int[] getHits() {
+
+        int m = weatherRepository.findAllRadiusFreqMap().keySet().stream()
+                .max(Double::compare).orElse(1000.0).intValue() + 1;
 
         int[] hist = new int[m];
-        for (Map.Entry<Double, Integer> e : radiusFreqMap.entrySet()) {
+        for (Map.Entry<Double, Integer> e : weatherRepository
+                .findAllRadiusFreqMap().entrySet()) {
             int i = e.getKey().intValue() % 10;
             hist[i] += e.getValue();
         }
-        retrieveValue.put("radius_freq", hist);
 
-        return GSON.toJson(retrieveValue);
+        return hist;
     }
 
     /**
@@ -155,9 +174,11 @@ public class WeatherQueryController {
      */
     public void updateRequestFrequency(String iata, Double radius) {
         AirportData airportData = airportDataRepository.findOne(iata);
-        requestFrequencyMap.put(airportData,
-                requestFrequencyMap.getOrDefault(airportData, 0) + 1);
-        radiusFreqMap.put(radius, radiusFreqMap.getOrDefault(radius, 0));
+        weatherRepository.findAllRequestFrequency().put(airportData,
+                weatherRepository.findAllRequestFrequency()
+                        .getOrDefault(airportData, 0) + 1);
+        weatherRepository.findAllRadiusFreqMap().put(radius, weatherRepository
+                .findAllRadiusFreqMap().getOrDefault(radius, 0));
     }
 
     /**
@@ -188,7 +209,7 @@ public class WeatherQueryController {
      */
     public static void init() {
         airportDataRepository.findAll().clear();
-        requestFrequencyMap.clear();
+        weatherRepository.findAllRequestFrequency().clear();
 
         airportDataRepository.addAirport("BOS", 42.364347, -71.005181);
         airportDataRepository.addAirport("EWR", 40.6925, -74.168667);

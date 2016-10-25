@@ -4,10 +4,12 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
+ * Repository Template.
+ *
  * @author felipe
  *
- * @param <T>
- * @param <ID>
+ * @param <T> entity.
+ * @param <ID> ID of Entity.
  */
 public interface Repository<T, ID extends Serializable> {
 

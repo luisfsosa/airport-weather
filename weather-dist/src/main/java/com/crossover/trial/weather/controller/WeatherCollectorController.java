@@ -1,6 +1,6 @@
 package com.crossover.trial.weather.controller;
 
-import static com.crossover.trial.weather.controller.WeatherQueryController.airportDataRepository;
+import static com.crossover.trial.weather.controller.AirportController.airportDataRepository;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,10 +13,9 @@ import com.crossover.trial.weather.exception.WeatherException;
 import com.google.gson.Gson;
 
 /**
- * A REST implementation of the WeatherCollector API. Accessible only to airport
- * weather collection sites via secure VPN.
+ * A Controller of the WeatherCollector API.
  *
- * @author code test administrator
+ * @author luisfsosa@gmail.com
  */
 public class WeatherCollectorController {
 
@@ -31,53 +30,58 @@ public class WeatherCollectorController {
      */
     public static final Gson GSON = new Gson();
 
-    /*
-     * (non-Javadoc)
+    // TODO: Inject AirportDataRepository.
+
+    /**
+     * Update the airports atmospheric information for a particular pointType
+     * with json formatted data point information.
      *
-     * @see
-     * com.crossover.trial.weather.WeatherCollectorEndpoint#updateWeather(java.
-     * lang.String, java.lang.String, java.lang.String)
+     * @param iataCode
+     *            the 3 letter airport code
+     * @param pointType
+     *            the point type, {@link DataPointType} for a complete list
+     * @param datapointJson
+     *            a json dict containing mean, first, second, thrid and count
+     *            keys
+     *
+     * @throws WeatherException
+     *             Exception of Weather.
      */
     public void updateWeather(String iataCode, String pointType,
             final String datapointJson) throws WeatherException {
+
+        AirportData airportData = null;
 
         if (iataCode == null || iataCode.length() != 3) {
             LOGGER.log(Level.SEVERE, "Bad parameters: iata = " + iataCode);
             throw new WeatherException("Bad parameters: iata = " + iataCode);
         }
 
-        AirportData airportData = airportDataRepository.findOne(iataCode);
+        airportData = airportDataRepository.findOne(iataCode);
+
+        if (airportData == null
+                || airportData.getAtmosphericInformation() == null) {
+            LOGGER.log(Level.SEVERE, "Bad parameters: iata = " + iataCode);
+            throw new WeatherException("Bad parameters: iata = " + iataCode);
+        }
 
         try {
-
-            if (airportData == null
-                    || airportData.getAtmosphericInformation() == null) {
-                LOGGER.log(Level.SEVERE, "Bad parameters: iata = " + iataCode);
-                throw new WeatherException(
-                        "Bad parameters: iata = " + iataCode);
-            }
-
             updateAtmosphericInformation(
                     airportData.getAtmosphericInformation(), pointType,
                     GSON.fromJson(datapointJson, DataPoint.class));
 
-        } catch (WeatherException e) {
+        } catch (Exception e) {
             LOGGER.log(Level.SEVERE, null, e);
             throw new WeatherException(e);
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.crossover.trial.weather.WeatherCollectorEndpoint#exit()
+    /**
+     * Exit Operation.
      */
     public void exit() {
         System.exit(0);
     }
-    //
-    // Internal support methods
-    //
 
     /**
      * update atmospheric information with the given data point for the given
@@ -90,13 +94,10 @@ public class WeatherCollectorController {
      * @param dp
      *            the actual data point
      *
-     * @throws WeatherException
-     *             Exception of Weather.
      */
     public void updateAtmosphericInformation(
             final AtmosphericInformation atmosphericInfo,
-            final String pointType, final DataPoint dataPoint)
-            throws WeatherException {
+            final String pointType, final DataPoint dataPoint) {
         final DataPointType dptype = DataPointType
                 .valueOf(pointType.toUpperCase());
 

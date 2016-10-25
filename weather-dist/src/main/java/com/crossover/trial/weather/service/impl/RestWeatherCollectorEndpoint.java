@@ -29,9 +29,16 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
     public static final Logger LOGGER = Logger
             .getLogger(RestWeatherCollectorEndpoint.class.getName());
 
-    /** all known airports */
+    // TODO: Inject WeatherCollectorController.
+    /**
+     * A Controller of the WeatherCollector API.
+     */
     private WeatherCollectorController weatherCollectorController = new WeatherCollectorController();
 
+    // TODO: Inject AirportController.
+    /**
+     * A Controller of the Airport Data.
+     */
     private AirportController airportController = new AirportController();
 
     /*

@@ -26,8 +26,10 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     public static final Logger LOGGER = Logger
             .getLogger(RestWeatherQueryEndpoint.class.getName());
 
-
-/** all known airports */
+    // TODO: Inject WeatherCollectorController.
+    /**
+     * A Controller of the WeatherCollector API.
+     */
     private WeatherQueryController weatherQueryController = new WeatherQueryController();
 
     /**
@@ -38,7 +40,7 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      */
     @Override
     public String ping() {
-     return weatherQueryController.ping();
+        return weatherQueryController.ping();
     }
 
     /**
@@ -56,9 +58,10 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
     @Override
     public Response weather(String iata, String radiusString) {
 
-          List<AtmosphericInformation> retrieveValue =weatherQueryController.weather(iata,radiusString);
+        List<AtmosphericInformation> retrieveValue = weatherQueryController
+                .weather(iata, radiusString);
 
-         return Response.status(Response.Status.OK).entity(retrieveValue)
+        return Response.status(Response.Status.OK).entity(retrieveValue)
                 .build();
     }
 }

@@ -3,7 +3,7 @@ package com.crossover.trial.weather.exception;
 /**
  * An internal exception marker.
  *
- * @author code test administrator
+ * @author luisfsosa@gmail.com
  */
 public class AirportException extends Exception {
 
