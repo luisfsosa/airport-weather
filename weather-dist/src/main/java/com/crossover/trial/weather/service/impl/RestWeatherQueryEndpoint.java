@@ -125,8 +125,11 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
      */
     @Override
     public Response weather(String iata, String radiusString) {
+
         double radius = radiusString == null || radiusString.trim().isEmpty()
                 ? 0 : Double.valueOf(radiusString);
+        
+        
         updateRequestFrequency(iata, radius);
 
         List<AtmosphericInformation> retrieveValue = new ArrayList<>();
@@ -134,17 +137,18 @@ public class RestWeatherQueryEndpoint implements WeatherQueryEndpoint {
             int idx = getAirportDataIdx(iata);
             retrieveValue.add(atmosphericInformationList.get(idx));
         } else {
-            AirportData ad = findAirportData(iata);
+            AirportData airportData = findAirportData(iata);
             for (int i = 0; i < airportDataList.size(); i++) {
-                if (calculateDistance(ad, airportDataList.get(i)) <= radius) {
-                    AtmosphericInformation ai = atmosphericInformationList
+                if (calculateDistance(airportData, airportDataList.get(i)) <= radius) {
+                    AtmosphericInformation atmosphericInformation = atmosphericInformationList
                             .get(i);
-                    if (ai.getCloudCover() != null || ai.getHumidity() != null
-                            || ai.getPrecipitation() != null
-                            || ai.getPressure() != null
-                            || ai.getTemperature() != null
-                            || ai.getWind() != null) {
-                        retrieveValue.add(ai);
+                    if (atmosphericInformation.getCloudCover() != null
+                            || atmosphericInformation.getHumidity() != null
+                            || atmosphericInformation.getPrecipitation() != null
+                            || atmosphericInformation.getPressure() != null
+                            || atmosphericInformation.getTemperature() != null
+                            || atmosphericInformation.getWind() != null) {
+                        retrieveValue.add(atmosphericInformation);
                     }
                 }
             }

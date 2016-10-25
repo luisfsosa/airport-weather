@@ -44,36 +44,39 @@ public class WeatherServer {
      * @param args
      */
     public static void main(String[] args) {
-        try {            
-            LOGGER.log(Level.INFO,"Starting Weather App local testing server: " + BASE_URL);
+        try {
+            LOGGER.log(Level.INFO,
+                    "Starting Weather App local testing server: " + BASE_URL);
 
             final ResourceConfig resourceConfig = new ResourceConfig();
             resourceConfig.register(RestWeatherCollectorEndpoint.class);
             resourceConfig.register(RestWeatherQueryEndpoint.class);
 
-            HttpServer server = GrizzlyHttpServerFactory.createHttpServer(
+            final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(
                     URI.create(BASE_URL), resourceConfig, false);
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                server.shutdownNow();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    server.shutdownNow();
+                }
             }));
 
             HttpServerProbe probe = new HttpServerProbe.Adapter() {
                 public void onRequestReceiveEvent(final HttpServerFilter filter,
                         final Connection connection, final Request request) {
-                    LOGGER.log(Level.INFO,request.getRequestURI());
+                    LOGGER.log(Level.INFO, request.getRequestURI());
                 }
             };
+
             server.getServerConfiguration().getMonitoringConfig()
                     .getWebServerConfig().addProbes(probe);
 
             // the autograder waits for this output before running automated
             // tests, please don't remove it
             server.start();
-            
-            LOGGER.log(Level.INFO,format("Weather Server started.\n url=%s\n", BASE_URL));
-            
-//            System.out.println(
-//                    format("Weather Server started.\n url=%s\n", BASE_URL));
+            System.out.println(
+                    format("Weather Server started.\n url=%s\n", BASE_URL));
 
             // blocks until the process is terminated
             Thread.currentThread().join();

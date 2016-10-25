@@ -110,12 +110,12 @@ public class WeatherEndpointTest {
     @Test
     public void testAddAirport() throws Exception {
         AirportData airportDataCreated = (AirportData) weatherCollectorEndpoint
-                .addAirport("EGLC", "51.505278", "0.055278").getEntity();
+                .addAirport("LCY", "51.505278", "0.055278").getEntity();
 
         assertNotNull(airportDataCreated);
 
         AirportData airportData = (AirportData) weatherCollectorEndpoint
-                .getAirport("EGLC").getEntity();
+                .getAirport("LCY").getEntity();
 
         assertEquals(airportDataCreated, airportData);
 
@@ -127,12 +127,12 @@ public class WeatherEndpointTest {
     @Test
     public void testDeleteAirport() throws Exception {
         String retrieveValue = (String) weatherCollectorEndpoint
-                .deleteAirport("EGLC").getEntity();
+                .deleteAirport("LCY").getEntity();
 
         assertEquals("ready", retrieveValue);
 
         AirportData airportData = (AirportData) weatherCollectorEndpoint
-                .getAirport("EGLC").getEntity();
+                .getAirport("LCY").getEntity();
 
         assertNull(airportData);
 

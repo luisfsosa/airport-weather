@@ -62,11 +62,18 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
     @Override
     public Response updateWeather(String iataCode, String pointType,
             final String datapointJson) {
+
+        if (iataCode == null || iataCode.length() != 3) {
+            LOGGER.log(Level.SEVERE, "Bad parameters: iata = " + iataCode);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         try {
             addDataPoint(iataCode, pointType,
                     GSON.fromJson(datapointJson, DataPoint.class));
         } catch (WeatherException e) {
             LOGGER.log(Level.SEVERE, null, e);
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
         return Response.status(Response.Status.OK).build();
     }
@@ -108,6 +115,35 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
     @Override
     public Response addAirport(String iata, String latString,
             String longString) {
+
+        Double latitude = null;
+        Double longitude = null;
+
+        if (iata == null || iata.length() != 3 || latString == null
+                || longString == null) {
+
+            LOGGER.log(Level.SEVERE,
+                    "Bad parameters: iata = " + iata + ", latString = "
+                            + latString + ", longString = " + longString);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        try {
+            latitude = Double.valueOf(latString);
+            longitude = Double.valueOf(longString);
+        } catch (NumberFormatException ex) {
+            LOGGER.log(Level.SEVERE, "Wrong airport coordinates latString = "
+                    + latString + ", longString = " + longString);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
+        if (latitude < -90 || latitude > 90 || longitude < -180
+                || longitude > 180) {
+            LOGGER.log(Level.SEVERE, "Wrong airport coordinates latString = "
+                    + latString + ", longString = " + longString);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         AirportData airportData = addAirport(iata, Double.valueOf(latString),
                 Double.valueOf(longString));
         return Response.status(Response.Status.OK).entity(airportData).build();
@@ -122,6 +158,12 @@ public class RestWeatherCollectorEndpoint implements WeatherCollectorEndpoint {
      */
     @Override
     public Response deleteAirport(String iata) {
+
+        if (iata == null || iata.length() != 3) {
+            LOGGER.log(Level.SEVERE, "Bad parameters: iata = " + iata);
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+
         AirportData airportData = findAirportData(iata);
         airportDataList.remove(airportData);
         return Response.status(Response.Status.OK).entity("ready").build();

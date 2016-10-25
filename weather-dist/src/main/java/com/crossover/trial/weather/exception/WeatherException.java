@@ -11,4 +11,8 @@ public class WeatherException extends Exception {
      * Serial of the class.
      */
     private static final long serialVersionUID = -3717617059428945841L;
+
+    public WeatherException(String s) {
+        super(s);
+    }
 }
