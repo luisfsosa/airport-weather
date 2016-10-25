@@ -5,18 +5,18 @@ package com.crossover.trial.weather.exception;
  *
  * @author code test administrator
  */
-public class WeatherException extends Exception {
+public class AirportException extends Exception {
 
     /**
      * Serial of the class.
      */
     private static final long serialVersionUID = -3717617059428945841L;
 
-    public WeatherException(String s) {
+    public AirportException(String s) {
         super(s);
     }
 
-    public WeatherException(Exception e) {
+    public AirportException(Exception e) {
         super(e);
     }
 }

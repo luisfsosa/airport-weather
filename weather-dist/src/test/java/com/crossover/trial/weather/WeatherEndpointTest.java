@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.crossover.trial.weather.controller.WeatherQueryController;
 import com.crossover.trial.weather.domain.AirportData;
 import com.crossover.trial.weather.domain.AtmosphericInformation;
 import com.crossover.trial.weather.domain.DataPoint;
@@ -39,7 +40,7 @@ public class WeatherEndpointTest {
 
     @Before
     public void setUp() throws Exception {
-        RestWeatherQueryEndpoint.init();
+        WeatherQueryController.init();
         dataPoint = new DataPoint.Builder().withCount(10).withFirst(10)
                 .withSecond(20).withThird(30).withMean(22).build();
         weatherCollectorEndpoint.updateWeather("BOS", "wind",
