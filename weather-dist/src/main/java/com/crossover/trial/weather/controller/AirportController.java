@@ -23,10 +23,9 @@ public class AirportController {
     public static final Logger LOGGER = Logger
             .getLogger(AirportController.class.getName());
 
-    
-    //TODO: Inject AirportDataRepository.
+    // TODO: Inject AirportDataRepository.
     /**
-     * all known airports
+     * all known airports.
      */
     protected static AirportDataRepository airportDataRepository = new AirportDataRepository();
 
@@ -126,8 +125,9 @@ public class AirportController {
      * @throws AirportException
      *             Exception of Airport.
      */
-    private void validateAirportParameters(String iata, String latString,
-            String longString) throws AirportException {
+    private void validateAirportParameters(final String iata,
+            final String latString, final String longString)
+            throws AirportException {
 
         if (iata == null || iata.length() != 3 || latString == null
                 || longString == null) {
@@ -152,8 +152,8 @@ public class AirportController {
      * @throws AirportException
      *             Exception of Airport.
      */
-    private void validateLatitudAndLongitud(Double latitude, Double longitude)
-            throws AirportException {
+    private void validateLatitudAndLongitud(final Double latitude,
+            final Double longitude) throws AirportException {
 
         if (latitude < -90 || latitude > 90 || longitude < -180
                 || longitude > 180) {

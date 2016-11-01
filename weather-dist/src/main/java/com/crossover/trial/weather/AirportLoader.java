@@ -17,11 +17,12 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
+import com.crossover.trial.weather.util.CsvSplitter;
+
 /**
  * A simple airport loader which reads a file from disk and sends entries to the
  * webservice
  *
- * TODO: Implement the Airport Loader
  * 
  * @author code test administrator
  */
@@ -39,39 +40,53 @@ public class AirportLoader {
     private static final String BASE_URI = "http://localhost:9090";
 
     /**
-     * end point for read queries
-     */
-    private WebTarget weatherQueryEndpoint;
-
-    /**
      * end point to supply updates
      */
     private WebTarget weatherCollectorEndpoint;
 
     public AirportLoader() {
         Client client = ClientBuilder.newClient();
-        weatherQueryEndpoint = client.target(BASE_URI + "/query");
         weatherCollectorEndpoint = client.target(BASE_URI + "/collect");
     }
 
-    public void upload(InputStream airportDataStream) throws IOException {
+    public void upload(File airportDataFile) throws IOException {
+
+        InputStream airportDataStream = new FileInputStream(airportDataFile);
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(airportDataStream));
         String line = null;
-        String[] columns = null;
-        String airport = null;
-        WebTarget path = null;
 
         while ((line = reader.readLine()) != null) {
-            columns = line.split(",");
-            if (columns.length > 7) {
-                airport = columns[4].replace("\"", "");
-                path = weatherCollectorEndpoint.path("/airport/" + airport + "/"
-                        + columns[6] + "/" + columns[7]);
-                path.request().post(Entity.entity("", "application/json"));
-            }
+            processLine(line);
         }
 
+    }
+
+    private void processLine(String line) {
+
+        WebTarget path = null;
+
+        String[] columns = CsvSplitter.split(line);
+        if (columns.length <= 7) {
+            return;
+        }
+
+        String pathString = extractRequestPath(columns);
+        path = weatherCollectorEndpoint.path(pathString);
+
+        path.request().post(Entity.text(""));
+
+    }
+
+    private String extractIataCode(String[] columns) {
+        return columns[4].replace("\"", "");
+    }
+
+    private String extractRequestPath(String[] columns) {
+        String iataCode = extractIataCode(columns);
+        String latitude = columns[6];
+        String longitude = columns[7];
+        return "/airport/" + iataCode + "/" + latitude + "/" + longitude;
     }
 
     @SuppressWarnings("unchecked")
@@ -102,7 +117,7 @@ public class AirportLoader {
         AirportLoader airportLoader = new AirportLoader();
 
         try {
-            airportLoader.upload(new FileInputStream(airportDataFile));
+            airportLoader.upload(airportDataFile);
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.SEVERE, null, e);
         } catch (IOException e) {

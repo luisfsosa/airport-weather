@@ -149,7 +149,7 @@ public class WeatherClient {
         AirportLoader airportLoader = new AirportLoader();
 
         try {
-            airportLoader.upload(new FileInputStream(airportDataFile));
+            airportLoader.upload(airportDataFile);
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.SEVERE, null, e);
         } catch (IOException e) {
